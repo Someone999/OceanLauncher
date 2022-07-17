@@ -114,19 +114,19 @@
                                 Foreground="White"  Style="{DynamicResource ButtonStyle2}"
                                     Click="Patch"
                                 >
-                                Patch
+                                补丁
                             </Button>
                             <Button Grid.Column="1" BorderThickness="0" BorderBrush="Transparent" Background="#677eff" Margin="10 0" Padding="15"
                                 Foreground="White"  Style="{DynamicResource ButtonStyle2}"
                                     Click="UnPatch"
                                 >
-                                UnPatch
+                                删除补丁
                             </Button>
                             <Button Grid.Column="2" BorderThickness="0" BorderBrush="Transparent" Background="#677eff" Margin="10 0" Padding="15"
                                 Foreground="White"  Style="{DynamicResource ButtonStyle2}"
                                     Click="OpenFolder"
                                 >
-                                打开Patch文件夹
+                                打开补丁文件夹
                             </Button>
                         </Grid>
                     </StackPanel>
