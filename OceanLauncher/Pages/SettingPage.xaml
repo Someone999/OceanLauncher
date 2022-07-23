@@ -103,7 +103,7 @@
                         <TextBox FontSize="24" Style="{DynamicResource TextBoxStyle1}" Padding="5" BorderThickness="2" Text="{Binding Port}">
 
                         </TextBox>
-                        <Label>客户端Patch[测试功能]</Label>
+                        <Label>客户端补丁[测试功能]</Label>
                         <Grid Margin="0 15 0 15">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
