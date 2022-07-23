@@ -46,7 +46,7 @@
                                         <ImageBrush ImageSource="Resources/logo.png"/>
                                     </Border.Background>
                                 </Border>
-                                <TextBlock Text="Ocean " FontSize="24" FontWeight="Bold" VerticalAlignment="Center">
+                                <TextBlock Text="长野原烟花店" FontSize="24" FontWeight="Bold" VerticalAlignment="Center">
                                     <TextBlock.Foreground>
                                         <LinearGradientBrush EndPoint="1,0" StartPoint="0,1">
                                             <GradientStop Color="#FF9B1E64" Offset="0.2"/>
@@ -55,7 +55,7 @@
                                     </TextBlock.Foreground>
 
                                 </TextBlock>
-                                <TextBlock Text="Launcher" FontSize="24" FontWeight="Bold" Foreground="Gray" VerticalAlignment="Center"/>
+                                <TextBlock Text="的启动器-2.85" FontSize="24" FontWeight="Bold" Foreground="Gray" VerticalAlignment="Center"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Grid.Column="1">
                                 <Button FontSize="18" Style="{DynamicResource ButtonStyle1}" Width="55" Padding="5 0" FontFamily="{StaticResource icon}" Foreground="Black"
