@@ -32,9 +32,9 @@ namespace OceanLauncher
     public class ServerInfo 
     {
 
-        public string IP { get; set; }="127.0.0.1:25565";
+        public string IP { get; set; }="cloud.nat.yinidc.cn:18224";
 
-        public string Name { get; set; } = "本地的服务器";
+        public string Name { get; set; } = "空的服务器";
 
         public string AddTime { get; set; }
 
