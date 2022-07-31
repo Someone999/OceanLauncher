@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using System.Windows;
 using WpfWidgetDesktop.Utils;
 
@@ -42,13 +38,13 @@ namespace OceanLauncher
         {
             SettingProvider.Save();
 
-            if (GlobalProps.controller != null)
+            if (GlobalProps.Controller != null)
             {
-                GlobalProps.controller.Stop();
+                GlobalProps.Controller.Stop();
 
             }
 
-            base.OnExit(e); 
+            base.OnExit(e);
         }
     }
 }

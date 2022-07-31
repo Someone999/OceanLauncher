@@ -4,23 +4,14 @@ using Newtonsoft.Json;
 using OceanLauncher.Pages;
 using OceanLauncher.Utils;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using WpfWidgetDesktop.Utils;
 
 namespace OceanLauncher
@@ -31,7 +22,7 @@ namespace OceanLauncher
     public partial class MainWindow : Window
     {
         MainVM vm = new MainVM();
-        SettingPage.CFG cfg;
+        SettingPage.Config _config;
         CustomCFG CustomCFG;
         readonly string id = "core.home";
         public MainWindow()
@@ -46,7 +37,7 @@ namespace OceanLauncher
 
 
             GlobalProps.NavigateTo = this.NavigateTo;
-            GlobalProps.frame = frame;
+            GlobalProps.Frame = frame;
 
             GlobalProps.SetServer = SetServer;
 
@@ -55,19 +46,20 @@ namespace OceanLauncher
 
             try
             {
-                cfg = JsonConvert.DeserializeObject<SettingPage.CFG>(SettingProvider.Get(SettingPage.id));
+                _config = JsonConvert.DeserializeObject<SettingPage.Config>(SettingProvider.Get(SettingPage.Id));
             }
             catch
             {
+                // Nothing to do
             }
             finally
             {
-                if (cfg == null)
+                if (_config == null)
                 {
                     NavigateTo(new SettingPage());
 
                 }
-                cfg = new SettingPage.CFG();
+                _config = new SettingPage.Config();
             }
 
 
@@ -87,7 +79,7 @@ namespace OceanLauncher
         {
             try
             {
-                CustomCFG=JsonConvert.DeserializeObject<CustomCFG>(File.ReadAllText("links.json"));
+                CustomCFG = JsonConvert.DeserializeObject<CustomCFG>(File.ReadAllText("links.json"));
 
             }
             catch (Exception)
@@ -105,11 +97,11 @@ namespace OceanLauncher
             {
                 if (vm.ServerInfo == null)
                 {
-                    vm.ServerInfo = new ServerInfo { IP="localhost:25565" };
+                    vm.ServerInfo = new ServerInfo { IP = "localhost:25565" };
 
                 }
             }
-            vm.ServerInfo =await ServerInfoGetter.GetAsync(vm.ServerInfo);
+            vm.ServerInfo = await ServerInfoGetter.GetAsync(vm.ServerInfo);
             DataContext = null;
             this.DataContext = vm;
 
@@ -203,7 +195,7 @@ namespace OceanLauncher
 
         private void Button_Click_5(object sender, RoutedEventArgs e)
         {
-            if (CustomCFG!=null)
+            if (CustomCFG != null)
             {
                 Process.Start(CustomCFG.logoUrl);
                 return;
@@ -238,12 +230,12 @@ namespace OceanLauncher
 
         private void ProxyChecked(object sender, RoutedEventArgs e)
         {
-            if (GlobalProps.controller == null)
+            if (GlobalProps.Controller == null)
             {
-                GlobalProps.controller = new GenshinImpact_Lanucher.Utils.ProxyController(cfg.Port, vm.ServerInfo.IP);
+                GlobalProps.Controller = new ProxyController(_config.Port, vm.ServerInfo.IP);
 
 
-                GlobalProps.controller.Start();
+                GlobalProps.Controller.Start();
 
 
                 //GameHelper helper = new GameHelper();
@@ -255,10 +247,10 @@ namespace OceanLauncher
 
         private void ProxyUnChecked(object sender, RoutedEventArgs e)
         {
-            if (GlobalProps.controller!=null)
+            if (GlobalProps.Controller != null)
             {
-                GlobalProps.controller.Stop();
-                GlobalProps.controller = null;
+                GlobalProps.Controller.Stop();
+                GlobalProps.Controller = null;
             }
 
         }
@@ -299,7 +291,7 @@ namespace OceanLauncher
     public class LauncherCFG
     {
 
-        
+
     }
 
 }

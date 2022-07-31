@@ -1,13 +1,11 @@
 ﻿using Newtonsoft.Json;
 using OceanLauncher.Pages;
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Principal;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using WpfWidgetDesktop.Utils;
 
@@ -17,7 +15,7 @@ namespace OceanLauncher.Utils
     {
         const string METADATA_PATH = "patch-metadata";
         const string FILE_NAME = "global-metadata.dat";
-        SettingPage.CFG cfg = new SettingPage.CFG();
+        SettingPage.Config _config = new SettingPage.Config();
 
         public bool IsAdministrator()
 
@@ -33,55 +31,48 @@ namespace OceanLauncher.Utils
 
         public string GetPatchDir()
         {
-            var ret= "";
+            string filePath = Path.Combine(Path.GetDirectoryName(_config.Path), "YuanShen_Data", "Managed", "Metadata");
+            string filePathOsrel = Path.Combine(Path.GetDirectoryName(_config.Path), "GenshinImpact_Data", "Managed", "Metadata");
 
-            string file_path = Path.Combine(Path.GetDirectoryName(cfg.Path), "YuanShen_Data", "Managed", "Metadata");
-            string file_path_osrel = Path.Combine(Path.GetDirectoryName(cfg.Path), "GenshinImpact_Data", "Managed", "Metadata");
-
-            if (GetCilentType() == CilentType.osrel)
+            if (GetCilentType() == ClientType.Ocean)
             {
-                file_path = file_path_osrel;
+                filePath = filePathOsrel;
             }
-            return file_path;
+            return filePath;
         }
 
         public PatchHelper()
         {
             try
             {
-                cfg = JsonConvert.DeserializeObject<SettingPage.CFG>(SettingProvider.Get(SettingPage.id));
+                _config = JsonConvert.DeserializeObject<SettingPage.Config>(SettingProvider.Get(SettingPage.Id));
             }
             catch
             {
-
+                _config = new SettingPage.Config();
             }
         }
 
-        public enum CilentType
+        public enum ClientType
         {
-            cnrel,
-            osrel,
-            notsupported
+            China,
+            Ocean,
+            NotSupported
         }
 
-        public CilentType GetCilentType()
+        public ClientType GetCilentType()
         {
-            string file_path = Path.Combine(Path.GetDirectoryName(cfg.Path), "YuanShen_Data", "Managed", "Metadata");
+            string filePath = Path.Combine(Path.GetDirectoryName(_config.Path), "YuanShen_Data", "Managed", "Metadata");
 
-            string file_path_osrel = Path.Combine(Path.GetDirectoryName(cfg.Path), "GenshinImpact_Data", "Managed", "Metadata");
+            string filePathOcean = Path.Combine(Path.GetDirectoryName(_config.Path), "GenshinImpact_Data", "Managed", "Metadata");
 
-            if (Directory.Exists(file_path_osrel))
+            if (Directory.Exists(filePathOcean))
             {
-                return CilentType.osrel;
+                return ClientType.Ocean;
             }
-            else if (Directory.Exists(file_path))
-            {
-                return CilentType.cnrel;
-            }
-            else
-            {
-                return CilentType.notsupported;
-            }
+            return Directory.Exists(filePath)
+                ? ClientType.China
+                : ClientType.NotSupported;
 
         }
 
@@ -90,13 +81,22 @@ namespace OceanLauncher.Utils
 
             if (!IsAdministrator())
             {
-                MessageBox.Show("未获取原神文件夹的读写权限，请以管理员身份运行启动器！");
+                string launchPath = Assembly.GetExecutingAssembly().Location;
+                ProcessStartInfo startInfo = new ProcessStartInfo(launchPath)
+                {
+                    WorkingDirectory = Path.GetDirectoryName(launchPath) ?? "",
+                    Verb = "runas"
+                };
+
+                Process.Start(startInfo);
+                Environment.Exit(0); 
+                //MessageBox.Show("未获取原神文件夹的读写权限，请以管理员身份运行启动器！");
                 return;
             }
 
             try
             {
-                Path.GetDirectoryName(cfg.Path);
+                Path.GetDirectoryName(_config.Path);
             }
             catch (Exception ex)
             {
@@ -115,7 +115,7 @@ namespace OceanLauncher.Utils
             }
 
             //修补
-            if (GetCilentType() == CilentType.cnrel)
+            if (GetCilentType() == ClientType.China)
             {
 
 
@@ -131,7 +131,7 @@ namespace OceanLauncher.Utils
                     return;
                 }
             }
-            else if (GetCilentType() == CilentType.osrel)
+            else if (GetCilentType() == ClientType.Ocean)
             {
 
                 string patched_file = Path.Combine(METADATA_PATH, "osrel-" + FILE_NAME);
@@ -166,7 +166,7 @@ namespace OceanLauncher.Utils
 
             try
             {
-                Path.GetDirectoryName(cfg.Path);
+                Path.GetDirectoryName(_config.Path);
 
             }
             catch (Exception ex)
@@ -177,7 +177,7 @@ namespace OceanLauncher.Utils
             }
             string file_path = GetPatchDir();
 
-            if (GetCilentType() == CilentType.cnrel)
+            if (GetCilentType() == ClientType.China)
             {
 
                 if (File.Exists(Path.Combine(file_path, FILE_NAME + ".bak")))
@@ -191,7 +191,7 @@ namespace OceanLauncher.Utils
                     MessageBox.Show("未找到备份文件！");
                 }
             }
-            else if (GetCilentType() == CilentType.osrel)
+            else if (GetCilentType() == ClientType.Ocean)
             {
 
                 if (File.Exists(Path.Combine(file_path, FILE_NAME + ".bak")))
@@ -234,7 +234,6 @@ namespace OceanLauncher.Utils
             }
 
             System.Diagnostics.Process.Start(GetPatchDir());
-
         }
 
         public bool IsPatched()
@@ -244,17 +243,17 @@ namespace OceanLauncher.Utils
             try
             {
                 //不相同即为已 Patch
-                r = !isValidFileContent(Path.Combine(dir, FILE_NAME), Path.Combine(dir, FILE_NAME + ".bak"));
+                r = !IsSameFile(Path.Combine(dir, FILE_NAME), Path.Combine(dir, FILE_NAME + ".bak"));
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-
+                //Nothing to do
             }
             return r;
         }
 
-        public static bool isValidFileContent(string filePath1, string filePath2)
+        public static bool IsSameFile(string filePath1, string filePath2)
         {
             //创建一个哈希算法对象
             using (HashAlgorithm hash = HashAlgorithm.Create())
@@ -265,7 +264,7 @@ namespace OceanLauncher.Utils
                     byte[] hashByte2 = hash.ComputeHash(file2);
                     string str1 = BitConverter.ToString(hashByte1);//将字节数组装换为字符串
                     string str2 = BitConverter.ToString(hashByte2);
-                    return (str1 == str2);//比较哈希码
+                    return str1 == str2;//比较哈希码
                 }
             }
         }

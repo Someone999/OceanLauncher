@@ -2,14 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace OceanLauncher.Utils
 {
@@ -48,7 +43,7 @@ namespace OceanLauncher.Utils
 
                 response = await new HttpClient().GetAsync(new Uri(builder.ToString()));
             }
-            catch(Exception e)
+            catch (Exception)
             {
                 return null;
             }
@@ -89,11 +84,11 @@ namespace OceanLauncher.Utils
         public static async Task<ServerInfo> GetAsync(ServerInfo SI)
         {
 
-            var Url = $"https://{SI.IP}/status/server";
+            var url = $"https://{SI.IP}/status/server";
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
-            var r =await HttpGet(url: Url);
+            var r = await HttpGet(url: url);
 
             sw.Stop();
             REPDT.Root dt;
@@ -115,7 +110,7 @@ namespace OceanLauncher.Utils
 
             return SI;
 
-            
+
 
         }
 

@@ -1,18 +1,14 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Security;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 using Titanium.Web.Proxy;
 using Titanium.Web.Proxy.EventArguments;
 using Titanium.Web.Proxy.Models;
 
-namespace GenshinImpact_Lanucher.Utils
-{ 
+namespace OceanLauncher.Utils
+{
     //public static class Global
     //{
     //    public static ProxyController controller { get; set; }
@@ -20,62 +16,70 @@ namespace GenshinImpact_Lanucher.Utils
 
     public class ProxyController
     {
-        ProxyServer proxyServer;
-        ExplicitProxyEndPoint explicitEndPoint;
-        private string port;
-        private string fakeHost;
+
+        public static List<string> Domains { get; } = new List<string>()
+        {
+            ".yuanshen.com",
+            ".hoyoverse.com",
+            ".mihoyo.com"
+        };
+            
+        ProxyServer _proxyServer;
+        ExplicitProxyEndPoint _explicitEndPoint;
+        private string _port;
+        private string _fakeHost;
 
         public ProxyController(string port, string host)
         {
-            this.port = port;
-            this.fakeHost = host;
+            this._port = port;
+            this._fakeHost = host;
 
 
         }
 
-        private bool IsRun;
+        private bool _isRun;
 
-        public bool _IsRun
+        public bool IsRun
         {
-            get { return proxyServer.ProxyRunning; }
-            set { IsRun = value; }
+            get => _proxyServer.ProxyRunning;
+            set => _isRun = value;
         }
 
 
         public void Start()
         {
-            proxyServer = new ProxyServer();
-            proxyServer.CertificateManager.EnsureRootCertificate();
+            _proxyServer = new ProxyServer();
+            _proxyServer.CertificateManager.EnsureRootCertificate();
 
 
-            proxyServer.BeforeRequest += OnRequest;
-            proxyServer.ServerCertificateValidationCallback += OnCertificateValidation;
-            if (String.IsNullOrEmpty( port))
+            _proxyServer.BeforeRequest += OnRequest;
+            _proxyServer.ServerCertificateValidationCallback += OnCertificateValidation;
+            if (String.IsNullOrEmpty(_port))
             {
-                port = 11451.ToString(); ;
+                _port = 11451.ToString(); ;
             }
 
-            explicitEndPoint = new ExplicitProxyEndPoint(IPAddress.Any,int.Parse(port), true)
+            _explicitEndPoint = new ExplicitProxyEndPoint(IPAddress.Any, int.Parse(_port), true)
             {
             };
 
             // Fired when a CONNECT request is received
-            explicitEndPoint.BeforeTunnelConnectRequest += OnBeforeTunnelConnectRequest;
+            _explicitEndPoint.BeforeTunnelConnectRequest += OnBeforeTunnelConnectRequest;
 
             // An explicit endpoint is where the client knows about the existence of a proxy
             // So client sends request in a proxy friendly manner
-            proxyServer.AddEndPoint(explicitEndPoint);
-            proxyServer.Start();
+            _proxyServer.AddEndPoint(_explicitEndPoint);
+            _proxyServer.Start();
 
 
-            foreach (var endPoint in proxyServer.ProxyEndPoints)
+            foreach (var endPoint in _proxyServer.ProxyEndPoints)
                 Console.WriteLine("Listening on '{0}' endpoint at Ip {1} and port: {2} ",
                     endPoint.GetType().Name, endPoint.IpAddress, endPoint.Port);
 
             // Only explicit proxies can be set as system proxy!
-            proxyServer.SetAsSystemHttpProxy(explicitEndPoint);
-            proxyServer.SetAsSystemHttpsProxy(explicitEndPoint);
-            
+            _proxyServer.SetAsSystemHttpProxy(_explicitEndPoint);
+            _proxyServer.SetAsSystemHttpsProxy(_explicitEndPoint);
+
         }
 
 
@@ -84,22 +88,23 @@ namespace GenshinImpact_Lanucher.Utils
         {
             try
             {
-                explicitEndPoint.BeforeTunnelConnectRequest -= OnBeforeTunnelConnectRequest;
-                proxyServer.BeforeRequest -= OnRequest;
+                _explicitEndPoint.BeforeTunnelConnectRequest -= OnBeforeTunnelConnectRequest;
+                _proxyServer.BeforeRequest -= OnRequest;
                 //proxyServer.BeforeResponse -= OnResponse;
-                proxyServer.ServerCertificateValidationCallback -= OnCertificateValidation;
+                _proxyServer.ServerCertificateValidationCallback -= OnCertificateValidation;
 
                 // proxyServer.ClientCertificateSelectionCallback -= OnCertificateSelection;
 
-            }catch (Exception ex)
+            }
+            catch (Exception)
             {
-
+                //Nothing to do
             }
             finally
             {
-                if (proxyServer.ProxyRunning)
+                if (_proxyServer.ProxyRunning)
                 {
-                    proxyServer.Stop();
+                    _proxyServer.Stop();
 
                 }
                 else
@@ -113,8 +118,8 @@ namespace GenshinImpact_Lanucher.Utils
         public void UninstallCertificate()
         {
 
-            proxyServer.CertificateManager.RemoveTrustedRootCertificate();
-            proxyServer.CertificateManager.RemoveTrustedRootCertificateAsAdmin();
+            _proxyServer.CertificateManager.RemoveTrustedRootCertificate();
+            _proxyServer.CertificateManager.RemoveTrustedRootCertificateAsAdmin();
 
 
         }
@@ -124,15 +129,12 @@ namespace GenshinImpact_Lanucher.Utils
         private async Task OnBeforeTunnelConnectRequest(object sender, TunnelConnectSessionEventArgs e)
         {
             string hostname = e.WebSession.Request.RequestUri.Host;
-            if (hostname.EndsWith(".yuanshen.com") |
-               hostname.EndsWith(".hoyoverse.com") |
-               hostname.EndsWith(".mihoyo.com") | hostname.EndsWith(fakeHost))
+            if (Domains.Any(d => hostname.EndsWith(d)) || hostname.EndsWith(_fakeHost))
             {
                 e.DecryptSsl = true;
             }
             else
             {
-
                 e.DecryptSsl = false;
             }
         }
@@ -146,12 +148,10 @@ namespace GenshinImpact_Lanucher.Utils
             //    return;
 
             string hostname = e.WebSession.Request.RequestUri.Host;
-            if (hostname.EndsWith(".yuanshen.com") |
-               hostname.EndsWith(".hoyoverse.com") |
-               hostname.EndsWith(".mihoyo.com"))
+            if (Domains.Any(d => hostname.EndsWith(d)))
             {
                 string oHost = e.WebSession.Request.RequestUri.Host;
-                e.HttpClient.Request.Url = e.HttpClient.Request.Url.Replace(oHost, fakeHost);
+                e.HttpClient.Request.Url = e.HttpClient.Request.Url.Replace(oHost, _fakeHost);
             }
         }
 

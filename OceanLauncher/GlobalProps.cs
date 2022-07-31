@@ -1,10 +1,5 @@
-﻿using GenshinImpact_Lanucher.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
+using OceanLauncher.Utils;
 
 namespace OceanLauncher
 {
@@ -21,18 +16,18 @@ namespace OceanLauncher
         public static setServer SetServer;
 
 
-        public static Frame frame;
+        public static Frame Frame;
 
         public readonly static string ServerListCfgID = "core.serverlist";
 
-        public static ProxyController controller;
+        public static ProxyController Controller;
 
 
     }
-    public class ServerInfo 
+    public class ServerInfo
     {
 
-        public string IP { get; set; }="cloud.nat.yinidc.cn:18224";
+        public string IP { get; set; } = "cloud.nat.yinidc.cn:18224";
 
         public string Name { get; set; } = "空的服务器";
 

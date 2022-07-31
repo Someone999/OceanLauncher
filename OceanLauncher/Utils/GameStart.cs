@@ -1,11 +1,7 @@
 ﻿using Newtonsoft.Json;
 using OceanLauncher.Pages;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using WpfWidgetDesktop.Utils;
 
@@ -13,12 +9,12 @@ namespace OceanLauncher.Utils
 {
     public class GameHelper
     {
-        SettingPage.CFG cfg;
+        SettingPage.Config _config;
         public GameHelper()
         {
             try
             {
-                cfg = JsonConvert.DeserializeObject<SettingPage.CFG>(SettingProvider.Get(SettingPage.id));
+                _config = JsonConvert.DeserializeObject<SettingPage.Config>(SettingProvider.Get(SettingPage.Id));
 
             }
             catch
@@ -27,10 +23,9 @@ namespace OceanLauncher.Utils
             }
             finally
             {
-                if (cfg == null)
+                if (_config == null)
                 {
-                    cfg = new SettingPage.CFG();
-
+                    _config = new SettingPage.Config();
                 }
             }
         }
@@ -41,17 +36,18 @@ namespace OceanLauncher.Utils
             Process progress = new Process();
             progress.StartInfo = new ProcessStartInfo
             {
-                FileName=cfg.Path,
-                Arguments= GetArguments(),
+                FileName = _config.Path,
+                Arguments = GetArguments(),
 
             };
             try
             {
                 progress.Start();
 
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
-                MessageBox.Show(e.Message,"启动失败");
+                MessageBox.Show(e.Message, "启动失败");
 
             }
 
@@ -64,8 +60,8 @@ namespace OceanLauncher.Utils
             try
             {
 
-                return $"-screen-height {cfg.Height}" +
-                                    $" -screen-width {cfg.Width} {cfg.Args}";
+                return $"-screen-height {_config.Height}" +
+                                    $" -screen-width {_config.Width} {_config.Args}";
             }
             catch
             {
