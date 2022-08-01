@@ -52,7 +52,7 @@ namespace OceanLauncher.Utils
             return result;
         }
 
-        class REPDT
+        class ResponseData
         {
             public class Status
             {
@@ -81,34 +81,34 @@ namespace OceanLauncher.Utils
         }
 
 
-        public static async Task<ServerInfo> GetAsync(ServerInfo SI)
+        public static async Task<ServerInfo> GetAsync(ServerInfo serverInfo)
         {
 
-            var url = $"https://{SI.IP}/status/server";
+            var url = $"https://{serverInfo.IP}/status/server";
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
             var r = await HttpGet(url: url);
 
             sw.Stop();
-            REPDT.Root dt;
+            ResponseData.Root dt;
             try
             {
-                dt = JsonConvert.DeserializeObject<REPDT.Root>(r);
+                dt = JsonConvert.DeserializeObject<ResponseData.Root>(r);
 
             }
             catch
             {
-                dt = new REPDT.Root();
+                dt = new ResponseData.Root();
             }
 
 
-            SI.players = dt.status.playerCount.ToString();
-            SI.ver = dt.status.version;
-            SI.timeout = sw.ElapsedMilliseconds.ToString();
+            serverInfo.players = dt.status.playerCount.ToString();
+            serverInfo.ver = dt.status.version;
+            serverInfo.timeout = sw.ElapsedMilliseconds.ToString();
 
 
-            return SI;
+            return serverInfo;
 
 
 

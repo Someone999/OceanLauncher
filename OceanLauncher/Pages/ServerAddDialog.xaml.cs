@@ -9,14 +9,14 @@ namespace OceanLauncher.Pages
     /// </summary>
     public partial class ServerAddDialog : Page
     {
-        VM vm = new VM();
+        ViewModel _viewModel = new ViewModel();
         public ServerAddDialog()
         {
             InitializeComponent();
-            DataContext = vm;
+            DataContext = _viewModel;
         }
 
-        public class VM : ObservableObject
+        public class ViewModel : ObservableObject
         {
             private ServerInfo _info = new ServerInfo();
 
@@ -37,7 +37,7 @@ namespace OceanLauncher.Pages
         {
 
 
-            GlobalProps.AddServer(vm.Info);
+            GlobalProps.AddServer(_viewModel.Info);
 
 
 

@@ -1,6 +1,4 @@
-﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
-using Microsoft.Toolkit.Mvvm.Input;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using OceanLauncher.Pages;
 using OceanLauncher.Utils;
 using System;
@@ -12,6 +10,9 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media.Animation;
+using OceanLauncher.Config;
+using OceanLauncher.Game.Patch;
+using OceanLauncher.Game.Tools.PathSearcher;
 using WpfWidgetDesktop.Utils;
 
 namespace OceanLauncher
@@ -21,14 +22,14 @@ namespace OceanLauncher
     /// </summary>
     public partial class MainWindow : Window
     {
-        MainVM vm = new MainVM();
+        MainViewModel _viewModel = new MainViewModel();
         SettingPage.Config _config;
-        CustomCFG CustomCFG;
+        CustomCfg _customCfg;
         readonly string id = "core.home";
         public MainWindow()
         {
             InitializeComponent();
-            this.DataContext = vm;
+            this.DataContext = _viewModel;
 
 
             IntPtr hWnd = new WindowInteropHelper(GetWindow(this)).EnsureHandle();
@@ -46,7 +47,8 @@ namespace OceanLauncher
 
             try
             {
-                _config = JsonConvert.DeserializeObject<SettingPage.Config>(SettingProvider.Get(SettingPage.Id));
+                //_config = JsonConvert.DeserializeObject<SettingPage.Config>(SettingProvider.Get(SettingPage.Id));
+                _config = JsonConvert.DeserializeObject<SettingPage.Config>(Configs.LauncherConfig[SettingPage.Id].GetValue<string>());
             }
             catch
             {
@@ -66,11 +68,11 @@ namespace OceanLauncher
         }
 
 
-        public void SetServer(ServerInfo si)
+        public void SetServer(ServerInfo serverInfo)
         {
-            vm.ServerInfo = si;
-            SettingProvider.SetNoSave(id, si);
-
+            _viewModel.ServerInfo = serverInfo;
+            //SettingProvider.SetNoSave(id, serverInfo);
+            Configs.LauncherConfig[id] = new DefaultConfigElement(serverInfo);
             LoadDataAsync();
         }
 
@@ -79,7 +81,7 @@ namespace OceanLauncher
         {
             try
             {
-                CustomCFG = JsonConvert.DeserializeObject<CustomCFG>(File.ReadAllText("links.json"));
+                _customCfg = JsonConvert.DeserializeObject<CustomCfg>(File.ReadAllText("links.json"));
 
             }
             catch (Exception)
@@ -91,19 +93,20 @@ namespace OceanLauncher
 
             try
             {
-                vm.ServerInfo = JsonConvert.DeserializeObject<ServerInfo>(SettingProvider.Get(id));
+                //_viewModel.ServerInfo = JsonConvert.DeserializeObject<ServerInfo>(SettingProvider.Get(id));
+                _viewModel.ServerInfo = JsonConvert.DeserializeObject<ServerInfo>(Configs.LauncherConfig[id].GetValue<string>());
             }
             finally
             {
-                if (vm.ServerInfo == null)
+                if (_viewModel.ServerInfo == null)
                 {
-                    vm.ServerInfo = new ServerInfo { IP = "localhost:25565" };
+                    _viewModel.ServerInfo = new ServerInfo { IP = "localhost:25565" };
 
                 }
             }
-            vm.ServerInfo = await ServerInfoGetter.GetAsync(vm.ServerInfo);
+            _viewModel.ServerInfo = await ServerInfoGetter.GetAsync(_viewModel.ServerInfo);
             DataContext = null;
-            this.DataContext = vm;
+            this.DataContext = _viewModel;
 
 
         }
@@ -167,7 +170,7 @@ namespace OceanLauncher
 
         private void Border_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
-            var p = new Utils.PatchHelper().IsPatched();
+            var p = new PatchHelper().IsPatched();
             MessageBoxResult vr = System.Windows.MessageBox.Show($"当前Patch状态：{p}，\n确定继续启动？", "启动前提示", MessageBoxButton.OKCancel, MessageBoxImage.Question);
             if (vr == MessageBoxResult.OK) // 如果是确定，就执行下面代码，记得换上自己的代码喔
             {
@@ -195,9 +198,9 @@ namespace OceanLauncher
 
         private void Button_Click_5(object sender, RoutedEventArgs e)
         {
-            if (CustomCFG != null)
+            if (_customCfg != null)
             {
-                Process.Start(CustomCFG.logoUrl);
+                Process.Start(_customCfg.LogoUrl);
                 return;
             }
             Process.Start("https://github.com/SwetyCore/OceanLauncher");
@@ -206,9 +209,9 @@ namespace OceanLauncher
 
         private void Button_Click_6(object sender, RoutedEventArgs e)
         {
-            if (CustomCFG != null)
+            if (_customCfg != null)
             {
-                Process.Start(CustomCFG.qqUrl);
+                Process.Start(_customCfg.QqUrl);
                 return;
             }
             Process.Start("https://github.com/SwetyCore/OceanLauncher");
@@ -217,9 +220,9 @@ namespace OceanLauncher
 
         private void Button_Click_7(object sender, RoutedEventArgs e)
         {
-            if (CustomCFG != null)
+            if (_customCfg != null)
             {
-                Process.Start(CustomCFG.githubUrl);
+                Process.Start(_customCfg.GithubUrl);
                 return;
             }
             Process.Start("https://github.com/SwetyCore/OceanLauncher");
@@ -232,7 +235,7 @@ namespace OceanLauncher
         {
             if (GlobalProps.Controller == null)
             {
-                GlobalProps.Controller = new ProxyController(_config.Port, vm.ServerInfo.IP);
+                GlobalProps.Controller = new ProxyController(_config.Port, _viewModel.ServerInfo.IP);
 
 
                 GlobalProps.Controller.Start();
@@ -254,44 +257,12 @@ namespace OceanLauncher
             }
 
         }
-    }
 
-    public class MainVM : ObservableObject
-    {
-        public ICommand OpenServerList { get; set; }
-
-        public MainVM()
+        private void Button_Click_8(object sender, RoutedEventArgs e)
         {
-            OpenServerList = new RelayCommand(() =>
-              {
-                  GlobalProps.NavigateTo(new ServerList());
-              });
+
         }
-
-
-        private ServerInfo _info;
-
-        public ServerInfo ServerInfo
-        {
-            get { return _info; }
-            set { SetProperty(ref _info, value); }
-        }
-
     }
 
-
-    public class CustomCFG
-    {
-        public string logoUrl { get; set; }
-        public string qqUrl { get; set; }
-        public string githubUrl { get; set; }
-    }
-
-
-    public class LauncherCFG
-    {
-
-
-    }
 
 }
