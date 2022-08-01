@@ -127,7 +127,7 @@
 
                                         <Button FontFamily="{StaticResource icon}" Style="{StaticResource ButtonStyle1}" FontSize="14" Padding="15" 
                                     Margin="5 0" Content="&#xe8fd;" Background="Transparent" BorderThickness="0"
-                                    Foreground="Black" Command="{Binding OpenServerList}"/>
+                                    Foreground="Black" Command="{Binding OpenServerList}" Click="Button_Click_8"/>
 
                                         <Button x:Name="button" FontFamily="{StaticResource icon}" Style="{StaticResource ButtonStyle1}" FontSize="14" Padding="15" 
                                     Margin="5 0" Content="&#xe72c;" Background="Transparent" BorderThickness="0"

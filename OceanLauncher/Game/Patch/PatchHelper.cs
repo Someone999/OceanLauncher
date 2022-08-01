@@ -1,43 +1,44 @@
-﻿using Newtonsoft.Json;
-using OceanLauncher.Pages;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Principal;
 using System.Windows;
+using Newtonsoft.Json;
+using OceanLauncher.Config;
+using OceanLauncher.Pages;
 using WpfWidgetDesktop.Utils;
 
-namespace OceanLauncher.Utils
+namespace OceanLauncher.Game.Patch
 {
+
     public class PatchHelper
     {
-        const string METADATA_PATH = "patch-metadata";
-        const string FILE_NAME = "global-metadata.dat";
-        SettingPage.Config _config = new SettingPage.Config();
+        const string MetadataPath = "patch-metadata";
+        const string FileName = "global-metadata.dat";
+        SettingPage.Config _config;
 
         public bool IsAdministrator()
 
         {
 
             WindowsIdentity current = WindowsIdentity.GetCurrent();
-
             WindowsPrincipal windowsPrincipal = new WindowsPrincipal(current);
-
             return windowsPrincipal.IsInRole(WindowsBuiltInRole.Administrator);
 
         }
 
         public string GetPatchDir()
         {
-            string filePath = Path.Combine(Path.GetDirectoryName(_config.Path), "YuanShen_Data", "Managed", "Metadata");
-            string filePathOsrel = Path.Combine(Path.GetDirectoryName(_config.Path), "GenshinImpact_Data", "Managed", "Metadata");
+            string filePath = Path.Combine(Path.GetDirectoryName(_config.Path) ?? "", "YuanShen_Data", "Managed", "Metadata");
+            string filePathOsrel = Path.Combine(Path.GetDirectoryName(_config.Path) ?? "", "GenshinImpact_Data", "Managed", "Metadata");
 
-            if (GetCilentType() == ClientType.Ocean)
+            if (GetClientType() == ClientType.Ocean)
             {
                 filePath = filePathOsrel;
             }
+            
             return filePath;
         }
 
@@ -45,7 +46,8 @@ namespace OceanLauncher.Utils
         {
             try
             {
-                _config = JsonConvert.DeserializeObject<SettingPage.Config>(SettingProvider.Get(SettingPage.Id));
+                _config = JsonConvert.DeserializeObject<SettingPage.Config>(Configs.LauncherConfig[SettingPage.Id].GetValue<string>());
+                //_config = JsonConvert.DeserializeObject<SettingPage.Config>(SettingProvider.Get(SettingPage.Id));
             }
             catch
             {
@@ -53,32 +55,27 @@ namespace OceanLauncher.Utils
             }
         }
 
-        public enum ClientType
-        {
-            China,
-            Ocean,
-            NotSupported
-        }
+        
 
-        public ClientType GetCilentType()
+        public ClientType GetClientType()
         {
-            string filePath = Path.Combine(Path.GetDirectoryName(_config.Path), "YuanShen_Data", "Managed", "Metadata");
+            string filePathChinese = Path.Combine(Path.GetDirectoryName(_config.Path) ?? "", "YuanShen_Data", "Managed", "Metadata");
 
-            string filePathOcean = Path.Combine(Path.GetDirectoryName(_config.Path), "GenshinImpact_Data", "Managed", "Metadata");
+            string filePathOcean = Path.Combine(Path.GetDirectoryName(_config.Path) ?? "", "GenshinImpact_Data", "Managed", "Metadata");
 
             if (Directory.Exists(filePathOcean))
             {
                 return ClientType.Ocean;
             }
-            return Directory.Exists(filePath)
-                ? ClientType.China
+            
+            return Directory.Exists(filePathChinese)
+                ? ClientType.Chinese
                 : ClientType.NotSupported;
 
         }
 
         public void Patch()
         {
-
             if (!IsAdministrator())
             {
                 string launchPath = Assembly.GetExecutingAssembly().Location;
@@ -96,7 +93,7 @@ namespace OceanLauncher.Utils
 
             try
             {
-                Path.GetDirectoryName(_config.Path);
+                var _ = Path.GetDirectoryName(_config.Path);
             }
             catch (Exception ex)
             {
@@ -104,45 +101,45 @@ namespace OceanLauncher.Utils
                 return
                 ;
             }
-            string file_path = GetPatchDir();
+            string filePath = GetPatchDir() ?? throw new ArgumentNullException("GetPatchDir()");
 
             //备份
-            if (!File.Exists(Path.Combine(file_path, FILE_NAME + ".bak")))
+            if (!File.Exists(Path.Combine(filePath, FileName + ".bak")))
             {
                 File.Copy(
-                    Path.Combine(file_path, FILE_NAME),
-                    Path.Combine(file_path, FILE_NAME + ".bak"));
+                    Path.Combine(filePath, FileName),
+                    Path.Combine(filePath, FileName + ".bak"));
             }
-
+            string patchedFile = "";
             //修补
-            if (GetCilentType() == ClientType.China)
+            if (GetClientType() == ClientType.Chinese)
             {
 
 
-                string patched_file = Path.Combine(METADATA_PATH, "cnrel-" + FILE_NAME);
-                if (File.Exists(patched_file))
+                patchedFile = Path.Combine(MetadataPath, "cnrel-" + FileName);
+                if (File.Exists(patchedFile))
                 {
-                    File.Copy(patched_file, Path.Combine(file_path, FILE_NAME), true
+                    File.Copy(patchedFile, Path.Combine(filePath, FileName), true
                         );
                 }
                 else
                 {
-                    MessageBox.Show($"文件不存在！{patched_file}");
+                    MessageBox.Show($"文件不存在！{patchedFile}");
                     return;
                 }
             }
-            else if (GetCilentType() == ClientType.Ocean)
+            else if (GetClientType() == ClientType.Ocean)
             {
 
-                string patched_file = Path.Combine(METADATA_PATH, "osrel-" + FILE_NAME);
-                if (File.Exists(patched_file))
+                patchedFile = Path.Combine(MetadataPath, "osrel-" + FileName);
+                if (File.Exists(patchedFile))
                 {
-                    File.Copy(patched_file, Path.Combine(file_path, FILE_NAME), true
+                    File.Copy(patchedFile, Path.Combine(filePath, FileName), true
                         );
                 }
                 else
                 {
-                    MessageBox.Show($"文件不存在！{patched_file}");
+                    MessageBox.Show($"文件不存在！{patchedFile}");
                     return;
                 }
             }
@@ -166,7 +163,7 @@ namespace OceanLauncher.Utils
 
             try
             {
-                Path.GetDirectoryName(_config.Path);
+               var _ = Path.GetDirectoryName(_config.Path);
 
             }
             catch (Exception ex)
@@ -177,28 +174,28 @@ namespace OceanLauncher.Utils
             }
             string file_path = GetPatchDir();
 
-            if (GetCilentType() == ClientType.China)
+            if (GetClientType() == ClientType.Chinese)
             {
 
-                if (File.Exists(Path.Combine(file_path, FILE_NAME + ".bak")))
+                if (File.Exists(Path.Combine(file_path, FileName + ".bak")))
                 {
                     File.Copy(
-                        Path.Combine(file_path, FILE_NAME + ".bak"),
-                        Path.Combine(file_path, FILE_NAME), true);
+                        Path.Combine(file_path, FileName + ".bak"),
+                        Path.Combine(file_path, FileName), true);
                 }
                 else
                 {
                     MessageBox.Show("未找到备份文件！");
                 }
             }
-            else if (GetCilentType() == ClientType.Ocean)
+            else if (GetClientType() == ClientType.Ocean)
             {
 
-                if (File.Exists(Path.Combine(file_path, FILE_NAME + ".bak")))
+                if (File.Exists(Path.Combine(file_path, FileName + ".bak")))
                 {
                     File.Copy(
-                        Path.Combine(file_path, FILE_NAME + ".bak"),
-                        Path.Combine(file_path, FILE_NAME), true);
+                        Path.Combine(file_path, FileName + ".bak"),
+                        Path.Combine(file_path, FileName), true);
                 }
                 else
                 {
@@ -217,20 +214,20 @@ namespace OceanLauncher.Utils
 
         public void OpenFolder()
         {
-            if (!Directory.Exists(METADATA_PATH))
+            if (!Directory.Exists(MetadataPath))
             {
-                Directory.CreateDirectory(METADATA_PATH);
+                Directory.CreateDirectory(MetadataPath);
             }
 
-            System.Diagnostics.Process.Start(Path.Combine(Environment.CurrentDirectory, METADATA_PATH));
+            System.Diagnostics.Process.Start(Path.Combine(Environment.CurrentDirectory, MetadataPath));
 
         }
 
         public void OpenPatchFolder()
         {
-            if (!Directory.Exists(METADATA_PATH))
+            if (!Directory.Exists(MetadataPath))
             {
-                Directory.CreateDirectory(METADATA_PATH);
+                Directory.CreateDirectory(MetadataPath);
             }
 
             System.Diagnostics.Process.Start(GetPatchDir());
@@ -243,7 +240,7 @@ namespace OceanLauncher.Utils
             try
             {
                 //不相同即为已 Patch
-                r = !IsSameFile(Path.Combine(dir, FILE_NAME), Path.Combine(dir, FILE_NAME + ".bak"));
+                r = !IsSameFile(Path.Combine(dir, FileName), Path.Combine(dir, FileName + ".bak"));
 
             }
             catch (Exception)

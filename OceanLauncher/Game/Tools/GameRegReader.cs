@@ -15,14 +15,16 @@ namespace OceanLauncher.Utils
         {
             string startPath = "";
             string launcherPath = GetLauncherPath();
+
             #region 获取游戏启动路径，和官方配置一致
+
             string cfgPath = Path.Combine(launcherPath, "config.ini");
             if (File.Exists(launcherPath) || File.Exists(cfgPath))
             {
                 //获取游戏本体路径
                 using (StreamReader reader = new StreamReader(cfgPath))
                 {
-                    string[] abc = reader.ReadToEnd().Split(new string[] { "\r\n" }, StringSplitOptions.None);
+                    string[] abc = reader.ReadToEnd().Split(new string[] {"\r\n"}, StringSplitOptions.None);
                     foreach (var item in abc)
                     {
                         //从官方获取更多配置
@@ -36,7 +38,9 @@ namespace OceanLauncher.Utils
             byte[] byteArr = Encoding.UTF8.GetBytes(startPath);
             string path = Encoding.UTF8.GetString(byteArr);
             return path;
+
             #endregion
+
         }
 
 
@@ -46,14 +50,14 @@ namespace OceanLauncher.Utils
         /// <returns></returns>
         public static string GetLauncherPath()
         {
-            RegistryKey key = Registry.LocalMachine;            //打开指定注册表根
-                                                                //获取官方启动器路径
+            RegistryKey key = Registry.LocalMachine;//打开指定注册表根
+            //获取官方启动器路径
             string launcherPath = "";
             try
             {
                 var regKeyOcean = key.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Genshin Impact");
 
-                launcherPath = regKeyOcean.GetValue("InstallPath").ToString();
+                launcherPath = regKeyOcean?.GetValue("InstallPath").ToString();
 
             }
             catch (Exception)
@@ -61,18 +65,19 @@ namespace OceanLauncher.Utils
                 try
                 {
                     var regKeyChinese = key.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\原神");
-                
-                    launcherPath = regKeyChinese.GetValue("InstallPath").ToString();
+
+                    launcherPath = regKeyChinese?.GetValue("InstallPath").ToString();
                 }
                 catch (Exception e)
                 {
                     return "";
                 }
 
-                
+
             }
 
-            byte[] bytePath = Encoding.UTF8.GetBytes(launcherPath);     //编码转换
+
+            byte[] bytePath = Encoding.UTF8.GetBytes(launcherPath);//编码转换
             string path = Encoding.UTF8.GetString(bytePath);
             return path;
 

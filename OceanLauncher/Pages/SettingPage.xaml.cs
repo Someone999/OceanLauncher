@@ -7,6 +7,8 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using OceanLauncher.Config;
+using OceanLauncher.Game.Patch;
 using WpfWidgetDesktop.Utils;
 
 namespace OceanLauncher.Pages
@@ -29,19 +31,20 @@ namespace OceanLauncher.Pages
         }
 
 
-        SettingVm _vm = new SettingVm
+        SettingViewModel _viewModel = new SettingViewModel
         {
 
         };
         public SettingPage()
         {
             InitializeComponent();
-            DataContext = _vm;
+            DataContext = _viewModel;
 
             Config config = new Config();
             try
             {
-                config = JsonConvert.DeserializeObject<Config>(SettingProvider.Get(Id));
+                config = JsonConvert.DeserializeObject<Config>(Configs.LauncherConfig["Id"].GetValue<string>());
+                //config = JsonConvert.DeserializeObject<Config>(SettingProvider.Get("id"));
             }
             catch { }
             finally
@@ -50,20 +53,20 @@ namespace OceanLauncher.Pages
                 {
                     config = new Config();
                 }
-                _vm.Args = config.Args;
-                _vm.Width = config.Width;
-                _vm.Height = config.Height;
-                _vm.Path = config.Path;
-                _vm.Port = config.Port;
+                _viewModel.Args = config.Args;
+                _viewModel.Width = config.Width;
+                _viewModel.Height = config.Height;
+                _viewModel.Path = config.Path;
+                _viewModel.Port = config.Port;
             }
         }
 
 
-        public class SettingVm : ObservableObject
+        public class SettingViewModel : ObservableObject
         {
             public ICommand GoHome { get; set; }
 
-            public SettingVm()
+            public SettingViewModel()
             {
                 GoHome = new RelayCommand(() =>
                 {
@@ -121,8 +124,9 @@ namespace OceanLauncher.Pages
             //cfg.Path = vm.Path;
             //cfg.Port = vm.Port;
 
-            SettingProvider.Set(Id, _vm);
-
+            //SettingProvider.Set(Id, _viewModel);
+            Configs.LauncherConfig[Id] = new DefaultConfigElement(_viewModel);
+            Configs.LauncherConfig.Save();
             GlobalProps.Frame.Navigate(new Home());
         }
 
@@ -144,11 +148,11 @@ namespace OceanLauncher.Pages
             string os = Path.Combine(gamePath, "GenshinImpact.exe");
             if (File.Exists(cn))
             {
-                _vm.Path = cn;
+                _viewModel.Path = cn;
             }
             else if (File.Exists(os))
             {
-                _vm.Path = os;
+                _viewModel.Path = os;
             }
             else
             {
@@ -157,8 +161,8 @@ namespace OceanLauncher.Pages
             }
 
 
-            SettingProvider.Set(Id, _vm);
-
+            Configs.LauncherConfig[Id] = new DefaultConfigElement(_viewModel);
+            //SettingProvider.Set(Id, _viewModel);
 
         }
 
@@ -167,19 +171,19 @@ namespace OceanLauncher.Pages
         private void Patch(object sender, RoutedEventArgs e)
         {
 
-            new Utils.PatchHelper().Patch();
+            new PatchHelper().Patch();
 
 
         }
 
         private void UnPatch(object sender, RoutedEventArgs e)
         {
-            new Utils.PatchHelper().UnPatch();
+            new PatchHelper().UnPatch();
         }
 
         private void OpenFolder(object sender, RoutedEventArgs e)
         {
-            new Utils.PatchHelper().OpenFolder();
+            new PatchHelper().OpenFolder();
 
 
         }

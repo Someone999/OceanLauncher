@@ -128,17 +128,34 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Config\Configs.cs" />
+    <Compile Include="Config\Converters\IConfigConverter.cs" />
+    <Compile Include="Config\DefaultConfigElement.cs" />
+    <Compile Include="Config\IConfigElement.cs" />
+    <Compile Include="Config\IniConfig.cs" />
+    <Compile Include="Config\ICanSaveConfigElement.cs" />
+    <Compile Include="Config\JsonConfig.cs" />
     <Compile Include="Converters\Class1.cs" />
+    <Compile Include="CustomCfg.cs" />
+    <Compile Include="Game\ClientType.cs" />
+    <Compile Include="Game\GameInfo.cs" />
+    <Compile Include="Game\Patch\PatchHelper.cs" />
+    <Compile Include="Game\Tools\GameRegReader.cs" />
+    <Compile Include="Game\Tools\GameStart.cs" />
+    <Compile Include="Game\Tools\PathSearcher\DirectoryGamePathSearcher.cs" />
+    <Compile Include="Game\Tools\PathSearcher\GamePathSearcherManager.cs" />
+    <Compile Include="Game\Tools\PathSearcher\IGamePathSearcher.cs" />
+    <Compile Include="Game\Tools\PathSearcher\RegistryGamePathSearcher.cs" />
+    <Compile Include="LauncherCfg.cs" />
+    <Compile Include="Launcher\LauncherInfo.cs" />
     <Compile Include="Pages\ServerAddDialog.xaml.cs">
       <DependentUpon>ServerAddDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Utils\GameRegReader.cs" />
-    <Compile Include="Utils\GameStart.cs" />
-    <Compile Include="Utils\PatchHelper.cs" />
-    <Compile Include="Utils\ProxyController.cs" />
-    <Compile Include="Utils\ServerInfoGetter.cs" />
+    <Compile Include="Proxy\ProxyController.cs" />
+    <Compile Include="Server\ServerInfoGetter.cs" />
     <Compile Include="Utils\SettingProvider.cs" />
     <Compile Include="Utils\WindowStyle.cs" />
+    <Compile Include="ViewModel\MainViewModel.cs" />
     <Page Include="CheckBoxStyle1.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

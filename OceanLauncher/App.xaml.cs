@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Windows;
+using OceanLauncher.Config;
 using WpfWidgetDesktop.Utils;
 
 namespace OceanLauncher
@@ -12,7 +13,7 @@ namespace OceanLauncher
     {
         protected override void OnStartup(StartupEventArgs e)
         {
-            SettingProvider.Init();
+            //SettingProvider.Init();
 
             ServicePointManager.ServerCertificateValidationCallback += (s, cert, chain, sslPolicyErrors) => true;
 
@@ -36,8 +37,8 @@ namespace OceanLauncher
         }
         protected override void OnExit(ExitEventArgs e)
         {
-            SettingProvider.Save();
-
+            //SettingProvider.Save();
+            Configs.LauncherConfig.Save();
             if (GlobalProps.Controller != null)
             {
                 GlobalProps.Controller.Stop();

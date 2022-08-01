@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using OceanLauncher.Config;
 using WpfWidgetDesktop.Utils;
 
 namespace OceanLauncher.Pages
@@ -16,11 +17,11 @@ namespace OceanLauncher.Pages
     /// </summary>
     public partial class ServerList : Page
     {
-        ServerListVM vm = new ServerListVM();
+        ServerListViewModel _viewModel = new ServerListViewModel();
         public ServerList()
         {
             InitializeComponent();
-            DataContext = vm;
+            DataContext = _viewModel;
 
 
 
@@ -30,11 +31,11 @@ namespace OceanLauncher.Pages
 
         public async Task CheckNetAsync()
         {
-            for (int i = 0; i < vm.ServerList.Count; i++)
+            for (int i = 0; i < _viewModel.ServerList.Count; i++)
             {
                 try
                 {
-                    vm.ServerList[i] = await ServerInfoGetter.GetAsync(vm.ServerList[i]);
+                    _viewModel.ServerList[i] = await ServerInfoGetter.GetAsync(_viewModel.ServerList[i]);
 
                 }
                 catch
@@ -46,7 +47,7 @@ namespace OceanLauncher.Pages
 
             }
             DataContext = null;
-            DataContext = vm;
+            DataContext = _viewModel;
         }
 
 
@@ -54,8 +55,10 @@ namespace OceanLauncher.Pages
 
         public void AddServer(ServerInfo si)
         {
-            vm.ServerList.Add(si);
-            SettingProvider.SetNoSave(GlobalProps.ServerListCfgID, vm.ServerList);
+            _viewModel.ServerList.Add(si);
+            //SettingProvider.SetNoSave(GlobalProps.ServerListCfgID, _viewModel.ServerList);
+            Configs.LauncherConfig[GlobalProps.ServerListCfgID] = new DefaultConfigElement(_viewModel.ServerList);
+            Configs.LauncherConfig.Save();
 
         }
 
@@ -72,28 +75,36 @@ namespace OceanLauncher.Pages
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
             var selected = lv.SelectedItem as ServerInfo;
-            vm.ServerList.Remove(selected);
+            _viewModel.ServerList.Remove(selected);
 
-            SettingProvider.Set(GlobalProps.ServerListCfgID, vm.ServerList);
+            //SettingProvider.Set(GlobalProps.ServerListCfgID, _viewModel.ServerList);
+            Configs.LauncherConfig[GlobalProps.ServerListCfgID] = new DefaultConfigElement(_viewModel.ServerList);
+            Configs.LauncherConfig.Save();
         }
 
         private void root_Loaded(object sender, RoutedEventArgs e)
         {
             CheckNetAsync();
-
         }
     }
 
-    public class ServerListVM : ObservableObject
+    public class ServerListViewModel : ObservableObject
     {
         public ICommand GoHome { get; set; }
         public ICommand Delete { get; set; }
-        public ServerListVM()
+        public ServerListViewModel()
         {
 
             try
             {
-                ServerList = JsonConvert.DeserializeObject<ObservableCollection<ServerInfo>>(SettingProvider.Get(GlobalProps.ServerListCfgID));
+                bool containsKey = Configs.LauncherConfig.ContainsKey(GlobalProps.ServerListCfgID);
+                string cfg = "";
+                if (containsKey)
+                {
+                    cfg = Configs.LauncherConfig[GlobalProps.ServerListCfgID].GetValue().ToString();
+                }
+                
+                ServerList = JsonConvert.DeserializeObject<ObservableCollection<ServerInfo>>(cfg);
             }
             finally
             {

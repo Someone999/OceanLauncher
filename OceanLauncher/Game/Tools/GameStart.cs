@@ -3,6 +3,7 @@ using OceanLauncher.Pages;
 using System;
 using System.Diagnostics;
 using System.Windows;
+using OceanLauncher.Config;
 using WpfWidgetDesktop.Utils;
 
 namespace OceanLauncher.Utils
@@ -14,8 +15,8 @@ namespace OceanLauncher.Utils
         {
             try
             {
-                _config = JsonConvert.DeserializeObject<SettingPage.Config>(SettingProvider.Get(SettingPage.Id));
-
+                _config = JsonConvert.DeserializeObject<SettingPage.Config>(Configs.LauncherConfig[SettingPage.Id].GetValue<string>());
+                //_config = JsonConvert.DeserializeObject<SettingPage.Config>(SettingProvider.Get(SettingPage.Id));
             }
             catch
             {
@@ -33,8 +34,8 @@ namespace OceanLauncher.Utils
 
         public void Start()
         {
-            Process progress = new Process();
-            progress.StartInfo = new ProcessStartInfo
+            Process process = new Process();
+            process.StartInfo = new ProcessStartInfo
             {
                 FileName = _config.Path,
                 Arguments = GetArguments(),
@@ -42,7 +43,7 @@ namespace OceanLauncher.Utils
             };
             try
             {
-                progress.Start();
+                process.Start();
 
             }
             catch (Exception e)
@@ -61,7 +62,7 @@ namespace OceanLauncher.Utils
             {
 
                 return $"-screen-height {_config.Height}" +
-                                    $" -screen-width {_config.Width} {_config.Args}";
+                       $" -screen-width {_config.Width} {_config.Args}";
             }
             catch
             {
