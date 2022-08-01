@@ -18,15 +18,30 @@ namespace OceanLauncher.Config
 
         /// <inheritdoc/>
         public object GetValue() => _innerVal;
-        
+
         /// <summary>
         /// 使用Convert.ChangeType将内部存储的转换成所需的类型后，返回相应类型的对象
         /// </summary>
         /// <typeparam name="T">要转换成的类型</typeparam>
         /// <returns>相应类型的对象</returns>
         /// <exception cref="InvalidCastException">内部存储的对象无法转换成类型T</exception>
-       
-        public T GetValue<T>() => (T)Convert.ChangeType(_innerVal, typeof(T));
+
+        public T GetValue<T>()
+        {
+            if (typeof(T) == _innerVal.GetType())
+            {
+                return (T)_innerVal;
+            }
+
+            if (typeof(IConvertible).IsAssignableFrom(typeof(T)))
+            {
+                return (T)Convert.ChangeType(_innerVal, typeof(T));
+            }
+
+            return default;
+            
+        }
+        
         
         /// <summary>
         /// 当内部存储对象的类型为Dictionary&lt;string, IConfigElement&gt;时获取或者设置

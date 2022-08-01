@@ -98,13 +98,11 @@ namespace OceanLauncher.Pages
             try
             {
                 bool containsKey = Configs.LauncherConfig.ContainsKey(GlobalProps.ServerListCfgID);
-                string cfg = "";
-                if (containsKey)
-                {
-                    cfg = Configs.LauncherConfig[GlobalProps.ServerListCfgID].GetValue().ToString();
-                }
-                
-                ServerList = JsonConvert.DeserializeObject<ObservableCollection<ServerInfo>>(cfg);
+                ObservableCollection<ServerInfo> obj;
+                obj = containsKey
+                    ? Configs.LauncherConfig[GlobalProps.ServerListCfgID].GetValue<ObservableCollection<ServerInfo>>()
+                    : new ObservableCollection<ServerInfo>();
+                ServerList = obj;
             }
             finally
             {
