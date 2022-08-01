@@ -16,7 +16,7 @@ namespace OceanLauncher
             //SettingProvider.Init();
 
             ServicePointManager.ServerCertificateValidationCallback += (s, cert, chain, sslPolicyErrors) => true;
-
+            Configs.Init();
 
             AppDomain currentDomain = AppDomain.CurrentDomain;
             // 当前作用域出现未捕获异常时，使用MyHandler函数响应事件

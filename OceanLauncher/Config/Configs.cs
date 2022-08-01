@@ -5,7 +5,7 @@ namespace OceanLauncher.Config
 {
     public static class Configs
     {
-        static Configs()
+        internal static void Init()
         {
             string[] configFiles = new[] {"./Config/cfg.json"};
             foreach (var configFile in configFiles)
@@ -26,11 +26,12 @@ namespace OceanLauncher.Config
                     Directory.CreateDirectory(dirName);
                 }
 
-                File.Create(configFile);
+                File.Create(configFile).Close();
 
             }
+            LauncherConfig = new JsonConfig("./Config/cfg.json");
         }
         
-        public static ICanSaveConfigElement LauncherConfig { get; } = new JsonConfig("./Config/cfg.json");
+        public static ICanSaveConfigElement LauncherConfig { get; private set; } 
     }
 }

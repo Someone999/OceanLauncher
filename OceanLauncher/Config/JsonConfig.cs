@@ -14,7 +14,7 @@ namespace OceanLauncher.Config.Json
 
         public JsonConfig(string path)
         {
-            _config = JsonConvert.DeserializeObject<Dictionary<string, object>>(File.ReadAllText(_path = path));
+            _config = JsonConvert.DeserializeObject<Dictionary<string, object>>(File.ReadAllText(_path = path)) ?? new Dictionary<string, object>();
         }
 
         public object GetValue() => _config;
